@@ -9,11 +9,14 @@ class Pembayaran extends Model
 {
     use HasFactory;
 
-    protected $fillable = [
-        'siswa_id',
-        'tanggal_bayar',
-        'jumlah_bayar',
-    ];
+   protected $fillable = [
+    'siswa_id',
+    'tanggal_bayar',
+    'bulan_bayar',       
+    'jumlah_bayar',
+    'metode_pembayaran', 
+    'keterangan',        
+];
 
     public function siswa()
     {

@@ -10,18 +10,15 @@ use Maatwebsite\Excel\Facades\Excel;
 
 class PembayaranController extends Controller
 {
-    // 1. HALAMAN UTAMA (INDEX) - DENGAN FILTER
+    // ... (Code index tetap sama, tidak perlu diubah) ...
     public function index(Request $request)
     {
-        // 1. Siapkan Query Dasar (Penting: select pembayarans.* agar ID tidak tertimpa saat Join)
         $query = Pembayaran::select('pembayarans.*')->with('siswa');
 
-        // 2. Logika JOIN (Jika user minta urutkan berdasarkan data siswa)
         if ($request->sort == 'nama_az' || $request->sort == 'kelas_az') {
             $query->join('siswas', 'pembayarans.siswa_id', '=', 'siswas.id');
         }
 
-        // 3. Logika Filter Bulan & Tahun (Tetap Jalan)
         if ($request->has('bulan') && $request->bulan != '') {
             $query->whereMonth('tanggal_bayar', $request->bulan);
         }
@@ -29,65 +26,73 @@ class PembayaranController extends Controller
             $query->whereYear('tanggal_bayar', $request->tahun);
         }
 
-        // 4. Logika SORTING (Inti Fitur Baru)
         switch ($request->sort) {
-            case 'nama_az':
-                $query->orderBy('siswas.nama', 'asc'); // Nama A-Z
-                break;
-            case 'kelas_az':
-                $query->orderBy('siswas.kelas', 'asc'); // Kelas A-Z
-                break;
-            case 'tanggal_terlama':
-                $query->orderBy('tanggal_bayar', 'asc'); // Tanggal Lama (Januari dulu)
-                break;
-            default:
-                $query->orderBy('tanggal_bayar', 'desc'); // Default: Tanggal Terbaru
-                break;
+            case 'nama_az': $query->orderBy('siswas.nama', 'asc'); break;
+            case 'kelas_az': $query->orderBy('siswas.kelas', 'asc'); break;
+            case 'tanggal_terlama': $query->orderBy('tanggal_bayar', 'asc'); break;
+            case 'tanggal_terbaru': $query->orderBy('tanggal_bayar', 'desc'); break;
+            case 'input_terbaru':
+            default: $query->latest(); break;
         }
 
-        // 5. Eksekusi
-        $pembayarans = $query->get();
-        $total_pemasukan = $pembayarans->sum('jumlah_bayar');
+        $pembayarans = $query->paginate(10); 
+        $total_pemasukan = $query->clone()->sum('jumlah_bayar');
 
         return view('pembayaran.index', compact('pembayarans', 'total_pemasukan'));
     }
 
-    // 2. HALAMAN TAMBAH DATA (CREATE) <--- INI YANG HILANG TADI
+    // 2. PERBAIKAN DI SINI (Ubah $siswa jadi $siswas)
     public function create()
     {
-        $siswas = Siswa::latest()->get(); // Ambil data siswa untuk dropdown
+        // Gunakan $siswas (jamak) agar sesuai dengan View
+        $siswas = Siswa::orderBy('nama', 'asc')->get(); 
         return view('pembayaran.create', compact('siswas'));
     }
 
-    // 3. PROSES SIMPAN DATA (STORE)
+    // 3. STORE (Tetap sama)
     public function store(Request $request)
     {
         $request->validate([
             'siswa_id' => 'required|exists:siswas,id',
             'tanggal_bayar' => 'required|date',
-            'jumlah_bayar' => 'required|numeric', // Pastikan input sudah angka murni (titik dihapus JS)
+            'bulan_bayar' => 'required|string',
+            'jumlah_bayar' => 'required|numeric|min:1000',
+            'metode_pembayaran' => 'required|string',
+            'keterangan' => 'nullable|string',
         ]);
 
-        Pembayaran::create($request->all());
+        Pembayaran::create([
+            'siswa_id' => $request->siswa_id,
+            'tanggal_bayar' => $request->tanggal_bayar,
+            'bulan_bayar' => $request->bulan_bayar,
+            'jumlah_bayar' => $request->jumlah_bayar,
+            'metode_pembayaran' => $request->metode_pembayaran,
+            'keterangan' => $request->keterangan,
+        ]);
 
-        return redirect()->route('pembayaran.index')->with('success', 'Pembayaran berhasil disimpan!');
+        return redirect()->route('dashboard')->with('success', 'Pembayaran berhasil disimpan!');
     }
 
-    // 4. HALAMAN EDIT DATA
+    // 4. PERBAIKAN DI SINI JUGA (Ubah $siswa jadi $siswas)
     public function edit($id)
     {
         $pembayaran = Pembayaran::findOrFail($id);
-        $siswas = Siswa::latest()->get();
+        // Gunakan $siswas (jamak)
+        $siswas = Siswa::orderBy('nama', 'asc')->get();
         return view('pembayaran.edit', compact('pembayaran', 'siswas'));
     }
 
-    // 5. PROSES UPDATE DATA
+    // ... (Sisa function update, destroy, cetak, export tetap sama) ...
+    
     public function update(Request $request, $id)
     {
         $request->validate([
             'siswa_id' => 'required|exists:siswas,id',
             'tanggal_bayar' => 'required|date',
+            'bulan_bayar' => 'required|string',
             'jumlah_bayar' => 'required|numeric',
+            'metode_pembayaran' => 'required|string',
+            'keterangan' => 'nullable|string',
         ]);
 
         $pembayaran = Pembayaran::findOrFail($id);
@@ -96,7 +101,6 @@ class PembayaranController extends Controller
         return redirect()->route('pembayaran.index')->with('success', 'Data pembayaran berhasil diperbarui!');
     }
 
-    // 6. HAPUS DATA
     public function destroy($id)
     {
         $pembayaran = Pembayaran::findOrFail($id);
@@ -105,18 +109,39 @@ class PembayaranController extends Controller
         return redirect()->route('pembayaran.index')->with('success', 'Data pembayaran berhasil dihapus!');
     }
 
-    // 7. CETAK KWITANSI
     public function cetak($id)
     {
         $pembayaran = Pembayaran::with('siswa')->findOrFail($id);
-        return view('pembayaran.cetak', compact('pembayaran'));
+        $terbilang = $this->penyebut($pembayaran->jumlah_bayar);
+        return view('pembayaran.cetak', compact('pembayaran', 'terbilang'));
     }
 
-    // DOWNLOAD EXCEL PEMBAYARAN
     public function export(Request $request)
     {
-        // Nama file: Laporan_Pembayaran_Januari_2026.xlsx (Contoh)
-        $nama_file = 'Laporan_Pembayaran_' . date('Y-m-d_H-i') . '.xlsx';
-        return Excel::download(new PembayaranExport($request), $nama_file);
+        return Excel::download(new PembayaranExport($request->bulan, $request->tahun), 'laporan_pembayaran.xlsx');
+    }
+
+    public function penyebut($nilai) {
+        $nilai = abs($nilai);
+        $huruf = array("", "satu", "dua", "tiga", "empat", "lima", "enam", "tujuh", "delapan", "sembilan", "sepuluh", "sebelas");
+        $temp = "";
+        if ($nilai < 12) {
+            $temp = " ". $huruf[$nilai];
+        } else if ($nilai <20) {
+            $temp = $this->penyebut($nilai - 10). " belas";
+        } else if ($nilai < 100) {
+            $temp = $this->penyebut($nilai/10)." puluh". $this->penyebut($nilai % 10);
+        } else if ($nilai < 200) {
+            $temp = " seratus" . $this->penyebut($nilai - 100);
+        } else if ($nilai < 1000) {
+            $temp = $this->penyebut($nilai/100) . " ratus" . $this->penyebut($nilai % 100);
+        } else if ($nilai < 2000) {
+            $temp = " seribu" . $this->penyebut($nilai - 1000);
+        } else if ($nilai < 1000000) {
+            $temp = $this->penyebut($nilai/1000) . " ribu" . $this->penyebut($nilai % 1000);
+        } else if ($nilai < 1000000000) {
+            $temp = $this->penyebut($nilai/1000000) . " juta" . $this->penyebut($nilai % 1000000);
+        }
+        return $temp;
     }
 }
