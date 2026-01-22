@@ -10,53 +10,46 @@ use Illuminate\Support\Facades\DB;
 
 class SiswaController extends Controller
 {
-    // 1. HALAMAN UTAMA (INDEX) + SEARCH + FILTER
-    public function index(Request $request)
-    {
-        $query = Siswa::query();
+    // tampilan
+public function index(Request $request)
+{
+    $query = Siswa::query();
 
-        // 1. LOGIKA PENCARIAN
-        if ($request->has('cari')) {
-            $query->where('nama', 'like', '%' . $request->cari . '%');
-        }
-
-        // 2. LOGIKA FILTER JENJANG
-        if ($request->has('tingkatan') && $request->tingkatan != 'Semua') {
-            $query->where('tingkatan', $request->tingkatan);
-        }
-
-        // 3. LOGIKA SORTING (URUTAN)
-        if ($request->has('sort') && $request->sort != '') {
-            switch ($request->sort) {
-                case 'nama_az':
-                    $query->orderBy('nama', 'asc');
-                    break;
-                case 'nama_za':
-                    $query->orderBy('nama', 'desc');
-                    break;
-                case 'kelas_az':
-                    $query->orderBy('kelas', 'asc');
-                    break;
-                case 'terbaru':
-                    $query->orderBy('created_at', 'desc');
-                    break;
-                default:
-                    $query->orderByRaw("FIELD(tingkatan, 'TK', 'SD', 'SMP', 'SMA')")
-                          ->orderBy('kelas', 'asc') 
-                          ->orderBy('nama', 'asc');
-                    break;
-            }
-        } else {
-
-            $query->orderByRaw("FIELD(tingkatan, 'TK', 'SD', 'SMP', 'SMA')")
-                  ->orderBy('kelas', 'asc')
-                  ->orderBy('nama', 'asc');
-        }
-
-        $siswas = $query->get();
-
-        return view('siswa.index', compact('siswas'));
+    // Filter Tingkatan (sudah ada)
+    if ($request->has('tingkatan') && $request->tingkatan != null) {
+        $query->where('tingkatan', $request->tingkatan);
     }
+
+    // Filter Pencarian (sudah ada)
+    if ($request->has('cari')) {
+        $query->where('nama', 'like', '%' . $request->cari . '%');
+    }
+
+    // --- LOGIKA SORTING BARU ---
+    if ($request->has('sort')) {
+        switch ($request->sort) {
+            case 'nama_az':
+                $query->orderBy('nama', 'asc'); break;
+            case 'nama_za':
+                $query->orderBy('nama', 'desc'); break;
+            case 'kelas_az':
+                $query->orderBy('kelas', 'asc'); break;
+            // Ini logika jenjang custom (manual karena string)
+            case 'jenjang_asc':
+                // Urutan manual: TK, SD, SMP, SMA
+                $query->orderByRaw("FIELD(tingkatan, 'TK', 'SD', 'SMP', 'SMA', 'Alumni')"); break;
+            case 'jenjang_desc':
+                $query->orderByRaw("FIELD(tingkatan, 'Alumni', 'SMA', 'SMP', 'SD', 'TK')"); break;
+            default: // terbaru
+                $query->latest(); break;
+        }
+    } else {
+        $query->latest();
+    }
+
+    $siswas = $query->get();
+    return view('siswa.index', compact('siswas'));
+}
 
     // 2. HALAMAN TAMBAH
     public function create()
@@ -66,18 +59,19 @@ class SiswaController extends Controller
 
     // 3. PROSES SIMPAN
     public function store(Request $request)
-    {
-        $request->validate([
-            'nama' => 'required|string|max:255',
-            'tingkatan' => 'required|string',
-            'asal_sekolah' => 'nullable|string|max:255',
-            'kelas' => 'required|string|max:50',
-        ]);
+{
+    $request->validate([
+        'nama' => 'required|string|max:255',
+        'tingkatan' => 'required',
+        'kelas' => 'required',
+        'asal_sekolah' => 'nullable|string',
+        'no_hp' => 'nullable|numeric|digits_between:10,15', // Validasi angka 10-15 digit
+    ]);
 
-        Siswa::create($request->all());
+    Siswa::create($request->all());
 
-        return redirect()->route('siswa.index')->with('success', 'Siswa berhasil ditambahkan!');
-    }
+    return redirect()->route('siswa.index')->with('success', 'Data siswa berhasil ditambahkan.');
+}
 
     // 4. HALAMAN EDIT
     public function edit($id)
@@ -161,11 +155,12 @@ class SiswaController extends Controller
 }
 
     // 9. SHOW (Opsional, untuk tombol mata biru)
-    public function show($id)
-    {
-        // Arahkan ke edit saja atau buat view khusus jika mau
-        return $this->edit($id);
-    }
+    public function show(string $id)
+{
+    $siswa = Siswa::findOrFail($id);
+
+    return view('siswa.show', compact('siswa'));
+}
 
     // 10. EXPORT EXCEL (INI YANG TADI ERROR / HILANG)
     public function export()

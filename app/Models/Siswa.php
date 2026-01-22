@@ -9,12 +9,13 @@ class Siswa extends Model
 {
     use HasFactory;
 
-    protected $fillable = [
-        'nama', 
-        'tingkatan', 
-        'asal_sekolah', // <--- TAMBAHAN BARU
-        'kelas'
-    ];
+   protected $fillable = [
+    'nama',
+    'tingkatan',
+    'kelas',
+    'asal_sekolah',
+    'no_hp', // <-- Tambahkan ini
+];
 
     public function pembayarans()
     {
