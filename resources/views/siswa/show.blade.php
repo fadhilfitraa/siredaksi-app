@@ -73,7 +73,7 @@
         <nav class="navbar navbar-expand-lg navbar-dark shadow-sm sticky-top">
             <div class="container">
                 <a class="navbar-brand fw-bold" href="#">
-                    <i class="fas fa-graduation-cap me-2"></i>SIREDAKSI BIMBEL
+                    <i class="fas fa-graduation-cap me-2"></i>SIREDAKSI BIMBEL AL KAUTSAR
                 </a>
             </div>
         </nav>

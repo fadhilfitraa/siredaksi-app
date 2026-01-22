@@ -77,7 +77,7 @@
     <nav class="navbar navbar-expand-lg navbar-dark shadow-sm sticky-top">
         <div class="container">
             <a class="navbar-brand fw-bold" href="{{ route('dashboard') }}">
-                <i class="fas fa-graduation-cap me-2"></i>SIREDAKSI BIMBEL
+                <i class="fas fa-graduation-cap me-2"></i>SIREDAKSI BIMBEL AL KAUTSAR
             </a>
             <button class="navbar-toggler border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navbarContent">
                 <span class="navbar-toggler-icon"></span>
