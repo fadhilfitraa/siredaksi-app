@@ -27,6 +27,7 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
+      # 1. Setup PHP (Sudah ada sebelumnya)
       - name: Setup PHP
         uses: shivammathur/setup-php@v2
         with:
@@ -34,8 +35,20 @@ jobs:
           extensions: dom, curl, libxml, mbstring, zip, pcntl, pdo, sqlite, pdo_sqlite
           coverage: none
 
+      # 2. Setup Node.js (BARU: Untuk mengatasi Vite Error)
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      # 3. Install & Build Frontend (BARU: Membuat manifest.json)
+      - name: Install & Build Frontend
+        run: |
+          npm install
+          npm run build
+
+      # 4. Install PHP Dependencies
       - name: Install Composer dependencies
-        # Menggunakan --no-scripts agar lebih aman dan cepat saat CI
         run: composer install --prefer-dist --no-interaction --no-progress
 
       - name: Copy environment file
@@ -44,9 +57,11 @@ jobs:
       - name: Generate app key
         run: php artisan key:generate
 
+      # 5. Jalankan Tes dengan Database Memory
       - name: Execute tests
         env:
           DB_CONNECTION: sqlite
           DB_DATABASE: ":memory:"
-        run: php artisan test
-
+        run: |
+          php artisan migrate --force
+          php artisan test
