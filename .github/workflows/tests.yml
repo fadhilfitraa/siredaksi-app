@@ -3,7 +3,7 @@ name: Tests
 on:
   push:
     branches:
-      - master
+      - main
       - '*.x'
   pull_request:
   schedule:
@@ -35,6 +35,7 @@ jobs:
           coverage: none
 
       - name: Install Composer dependencies
+        # Menggunakan --no-scripts agar lebih aman dan cepat saat CI
         run: composer install --prefer-dist --no-interaction --no-progress
 
       - name: Copy environment file
