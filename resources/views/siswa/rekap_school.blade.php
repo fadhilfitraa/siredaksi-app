@@ -3,21 +3,16 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Detail Siswa - {{ $sekolah }}</title>
+    <title>Daftar Kelas - {{ $nama_sekolah }}</title>
+    
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     
     <style>
         body { background-color: #f4f6f9; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
-        
-        /* Navbar Styling */
         .navbar { background: linear-gradient(135deg, #0d6efd 0%, #0a58ca 100%); }
         .navbar-brand { letter-spacing: 1px; }
-        
-        /* Table Styling */
         .table-hover tbody tr:hover { background-color: #f1f4f9; }
-        
-        /* Custom Button */
         .btn-back { border-radius: 50px; padding: 8px 25px; font-weight: 600; }
     </style>
 </head>
@@ -60,27 +55,21 @@
         
         <div class="d-flex justify-content-between align-items-center mb-4">
             <div>
-                <h6 class="text-uppercase text-muted mb-1 ls-1 small fw-bold">
-                    {{ $sekolah }} <i class="fas fa-chevron-right mx-2 text-muted" style="font-size: 10px;"></i> Detail Kelas
-                </h6>
+                <h6 class="text-uppercase text-muted mb-1 ls-1 small fw-bold">Detail Sekolah</h6>
                 <h2 class="fw-bold text-primary mb-0">
-                    <i class="fas fa-users me-2 text-dark opacity-75"></i> Kelas {{ $kelas }}
+                    <i class="fas fa-school me-2 text-dark opacity-75"></i> {{ $nama_sekolah }}
                 </h2>
             </div>
-            
-            <a href="{{ route('siswa.rekapSchool', urlencode($sekolah)) }}" class="btn btn-outline-primary btn-back shadow-sm">
-                <i class="fas fa-arrow-left me-2"></i> Kembali ke Daftar Kelas
+            <a href="{{ route('siswa.rekap') }}" class="btn btn-outline-primary btn-back shadow-sm">
+                <i class="fas fa-arrow-left me-2"></i> Kembali ke Rekap
             </a>
         </div>
 
         <div class="card shadow-sm border-0 rounded-4 overflow-hidden">
-            <div class="card-header bg-white fw-bold py-3 border-bottom-0 d-flex justify-content-between align-items-center">
+            <div class="card-header bg-white fw-bold py-3 border-bottom-0">
                 <h5 class="mb-0 fw-bold text-dark">
-                    <i class="fas fa-list-ol me-2 text-secondary"></i> Daftar Siswa Terdaftar
+                    <i class="fas fa-chalkboard me-2 text-secondary"></i> Daftar Kelas Terdaftar
                 </h5>
-                <span class="badge bg-light text-dark border px-3 py-2 rounded-pill fs-6">
-                    Total: {{ $siswas->count() }} Siswa
-                </span>
             </div>
             
             <div class="card-body p-0">
@@ -88,50 +77,49 @@
                     <table class="table table-hover table-striped mb-0 align-middle">
                         <thead class="table-light">
                             <tr>
-                                <th class="ps-4 py-3 text-center" width="5%">No</th>
-                                <th class="py-3">Nama Lengkap</th>
+                                <th class="ps-4 py-3" width="30%">Nama Kelas</th>
                                 <th class="py-3 text-center">Jenjang</th>
-                                <th class="py-3">Terdaftar Sejak</th>
-                                <th class="py-3 text-center pe-4" width="15%">Aksi</th>
+                                <th class="py-3 text-center">Jumlah Siswa</th>
+                                <th class="py-3 text-center pe-4" width="20%">Aksi</th>
                             </tr>
                         </thead>
                         <tbody>
-                            @forelse($siswas as $index => $s)
+                            @forelse($data_kelas as $d)
                             <tr>
-                                <td class="text-center text-muted fw-bold ps-4">{{ $index + 1 }}</td>
-                                
-                                <td>
-                                    <span class="fw-bold text-dark fs-6">{{ $s->nama }}</span>
+                                <td class="ps-4">
+                                    <span class="fw-bold text-dark fs-5">{{ $d->kelas }}</span>
                                 </td>
                                 
                                 <td class="text-center">
-                                    @if($s->tingkatan == 'TK') 
+                                    @if($d->tingkatan == 'TK') 
                                         <span class="badge bg-success bg-opacity-10 text-success border border-success rounded-pill px-3">TK</span>
-                                    @elseif($s->tingkatan == 'SD') 
+                                    @elseif($d->tingkatan == 'SD') 
                                         <span class="badge bg-danger bg-opacity-10 text-danger border border-danger rounded-pill px-3">SD</span>
-                                    @elseif($s->tingkatan == 'SMP') 
+                                    @elseif($d->tingkatan == 'SMP') 
                                         <span class="badge bg-primary bg-opacity-10 text-primary border border-primary rounded-pill px-3">SMP</span>
                                     @else 
                                         <span class="badge bg-secondary bg-opacity-10 text-secondary border border-secondary rounded-pill px-3">SMA</span>
                                     @endif
                                 </td>
                                 
-                                <td class="text-muted">
-                                    <i class="far fa-calendar-alt me-2 small opacity-50"></i> {{ $s->created_at->format('d F Y') }}
+                                <td class="text-center">
+                                    <span class="badge bg-light text-dark border px-3 py-2 rounded-pill fs-6 shadow-sm">
+                                        {{ $d->total }} Siswa
+                                    </span>
                                 </td>
                                 
                                 <td class="text-center pe-4">
-                                    <a href="{{ route('siswa.show', $s->id) }}" 
+                                    <a href="{{ route('siswa.rekapDetail', ['sekolah' => $nama_sekolah, 'kelas' => $d->kelas]) }}" 
                                        class="btn btn-primary btn-sm rounded-pill px-4 shadow-sm fw-bold">
-                                        <i class="fas fa-id-card me-1"></i> Profil
+                                        <i class="fas fa-users me-1"></i> Lihat Siswa
                                     </a>
                                 </td>
                             </tr>
                             @empty
                             <tr>
-                                <td colspan="5" class="text-center py-5 text-muted">
-                                    <div class="mb-3"><i class="fas fa-user-slash fa-3x opacity-25"></i></div>
-                                    <h6 class="fw-bold">Data siswa tidak ditemukan di kelas ini.</h6>
+                                <td colspan="4" class="text-center py-5 text-muted">
+                                    <div class="mb-3"><i class="fas fa-chalkboard-teacher fa-3x opacity-25"></i></div>
+                                    <h6 class="fw-bold">Belum ada kelas terdaftar untuk sekolah ini.</h6>
                                 </td>
                             </tr>
                             @endforelse

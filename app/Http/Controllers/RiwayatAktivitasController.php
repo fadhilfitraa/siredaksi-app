@@ -14,4 +14,13 @@ class RiwayatAktivitasController extends Controller
         
         return view('riwayat.index', compact('riwayat'));
     }
+
+    // Di dalam class RiwayatAktivitasController
+
+    public function destroy($id)
+    {
+    $data = \App\Models\RiwayatAktivitas::findOrFail($id); // Sesuaikan nama model
+    $data->delete();
+    return back()->with('success', 'Berhasil dihapus.');
+    }
 }

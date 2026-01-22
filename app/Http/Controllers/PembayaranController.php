@@ -10,33 +10,46 @@ use Maatwebsite\Excel\Facades\Excel;
 
 class PembayaranController extends Controller
 {
-    // ... (Code index tetap sama, tidak perlu diubah) ...
     public function index(Request $request)
     {
-        $query = Pembayaran::select('pembayarans.*')->with('siswa');
+        $query = Pembayaran::with('siswa');
 
-        if ($request->sort == 'nama_az' || $request->sort == 'kelas_az') {
-            $query->join('siswas', 'pembayarans.siswa_id', '=', 'siswas.id');
-        }
-
-        if ($request->has('bulan') && $request->bulan != '') {
+        // 1. Filter Pencarian Bulan
+        if ($request->filled('bulan')) {
             $query->whereMonth('tanggal_bayar', $request->bulan);
         }
-        if ($request->has('tahun') && $request->tahun != '') {
+
+        // 2. Filter Pencarian Tahun
+        if ($request->filled('tahun')) {
             $query->whereYear('tanggal_bayar', $request->tahun);
         }
 
-        switch ($request->sort) {
-            case 'nama_az': $query->orderBy('siswas.nama', 'asc'); break;
-            case 'kelas_az': $query->orderBy('siswas.kelas', 'asc'); break;
-            case 'tanggal_terlama': $query->orderBy('tanggal_bayar', 'asc'); break;
-            case 'tanggal_terbaru': $query->orderBy('tanggal_bayar', 'desc'); break;
-            case 'input_terbaru':
-            default: $query->latest(); break;
+        // 3. LOGIKA BARU: Filter Rentang Tanggal
+        if ($request->filled('start_date') && $request->filled('end_date')) {
+            // Jika user isi Tanggal Awal DAN Akhir (Misal: 1 Jan - 5 Jan)
+            $query->whereBetween('tanggal_bayar', [$request->start_date, $request->end_date]);
+        } elseif ($request->filled('start_date')) {
+            // Jika user CUMA isi Tanggal Awal (Misal: 20 Jan), otomatis cari HANYA tanggal itu
+            $query->whereDate('tanggal_bayar', $request->start_date);
         }
 
-        $pembayarans = $query->paginate(10); 
-        $total_pemasukan = $query->clone()->sum('jumlah_bayar');
+        // 4. Logika Sorting (Sama seperti sebelumnya)
+        if ($request->sort == 'tanggal_terbaru') {
+            $query->orderBy('tanggal_bayar', 'desc');
+        } elseif ($request->sort == 'tanggal_terlama') {
+            $query->orderBy('tanggal_bayar', 'asc');
+        } elseif ($request->sort == 'nama_az') {
+            $query->join('siswas', 'pembayarans.siswa_id', '=', 'siswas.id')
+                  ->orderBy('siswas.nama', 'asc')
+                  ->select('pembayarans.*'); 
+        } else {
+            $query->latest(); // Default input terbaru
+        }
+
+        $pembayarans = $query->paginate(10);
+        
+        // Hitung total pemasukan berdasarkan filter yang aktif
+        $total_pemasukan = $query->sum('jumlah_bayar');
 
         return view('pembayaran.index', compact('pembayarans', 'total_pemasukan'));
     }

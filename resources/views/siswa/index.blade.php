@@ -17,59 +17,55 @@
         /* Card Custom */
         .card-custom { border: none; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); overflow: hidden; background: white; }
         
-        /* Filter Jenjang (Cell Terpisah) */
+        /* Filter Jenjang */
         .jenjang-link {
-            text-decoration: none;
-            color: #6c757d;
-            border: 1px solid #dee2e6;
-            padding: 6px 18px;
-            border-radius: 50px;
-            font-weight: 600;
-            font-size: 0.85rem;
-            transition: all 0.2s;
-            background-color: white;
-            display: inline-block;
+            text-decoration: none; color: #6c757d; border: 1px solid #dee2e6;
+            padding: 6px 18px; border-radius: 50px; font-weight: 600; font-size: 0.85rem;
+            transition: all 0.2s; background-color: white; display: inline-block;
         }
-        .jenjang-link:hover {
-            background-color: #f8f9fa;
-            border-color: #adb5bd;
-            color: #495057;
-        }
-        .jenjang-link.active {
-            background-color: #0d6efd;
-            color: white;
-            border-color: #0d6efd;
-        }
+        .jenjang-link:hover { background-color: #f8f9fa; border-color: #adb5bd; color: #495057; }
+        .jenjang-link.active { background-color: #0d6efd; color: white; border-color: #0d6efd; }
 
         /* Table Styling */
         .table-custom thead th { 
-            background-color: #f1f3f5;
-            border-bottom: 2px solid #dee2e6;
-            color: #495057;
-            font-weight: 700;
-            text-transform: uppercase;
-            font-size: 0.8rem;
-            vertical-align: middle;
-            white-space: nowrap;
+            background-color: #f1f3f5; border-bottom: 2px solid #dee2e6; color: #495057;
+            font-weight: 700; text-transform: uppercase; font-size: 0.8rem;
+            vertical-align: middle; white-space: nowrap;
         }
-        .table-custom tbody td { 
-            vertical-align: middle; 
-            font-size: 0.95rem;
-            padding: 10px 15px;
-            border-color: #e9ecef;
-        }
+        .table-custom tbody td { vertical-align: middle; font-size: 0.95rem; padding: 10px 15px; border-color: #e9ecef; }
         .table-hover tbody tr:hover { background-color: #f8f9fa; }
 
         /* Link Nama Siswa */
-        .nama-siswa-link {
-            color: #212529;
-            text-decoration: none;
-            transition: color 0.2s;
+        .nama-siswa-link { color: #212529; text-decoration: none; transition: color 0.2s; }
+        .nama-siswa-link:hover { color: #0d6efd; text-decoration: underline; }
+
+        /* --- STYLE BARU UNTUK TOMBOL AKSI --- */
+        .btn-icon {
+            width: 32px;
+            height: 32px;
+            padding: 0;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%; /* Bulat Sempurna */
+            transition: all 0.2s;
+            margin: 0 3px; /* Jarak antar tombol */
+            border: 1px solid #dee2e6;
+            background-color: white;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
         }
-        .nama-siswa-link:hover {
-            color: #0d6efd; /* Biru saat dihover */
-            text-decoration: underline;
-        }
+        .btn-icon:hover { transform: scale(1.1); box-shadow: 0 4px 8px rgba(0,0,0,0.1); }
+        
+        /* Warna Spesifik */
+        .btn-detail { color: #0dcaf0; } /* Biru Muda */
+        .btn-detail:hover { background-color: #0dcaf0; color: white; border-color: #0dcaf0; }
+        
+        .btn-edit { color: #ffc107; } /* Kuning */
+        .btn-edit:hover { background-color: #ffc107; color: black; border-color: #ffc107; }
+        
+        .btn-delete { color: #dc3545; } /* Merah */
+        .btn-delete:hover { background-color: #dc3545; color: white; border-color: #dc3545; }
+
     </style>
 </head>
 <body>
@@ -137,31 +133,15 @@
                     <div class="mb-4">
                         <label class="small text-muted fw-bold text-uppercase mb-2 d-block">Filter Jenjang Pendidikan</label>
                         <div class="d-flex flex-wrap gap-2">
-                            <a href="{{ route('siswa.index', ['sort' => request('sort')]) }}" 
-                               class="jenjang-link {{ !request('tingkatan') ? 'active' : '' }}">
-                               Semua
-                            </a>
-                            <a href="{{ route('siswa.index', ['tingkatan' => 'TK', 'sort' => request('sort')]) }}" 
-                               class="jenjang-link {{ request('tingkatan') == 'TK' ? 'active' : '' }}">
-                               TK
-                            </a>
-                            <a href="{{ route('siswa.index', ['tingkatan' => 'SD', 'sort' => request('sort')]) }}" 
-                               class="jenjang-link {{ request('tingkatan') == 'SD' ? 'active' : '' }}">
-                               SD
-                            </a>
-                            <a href="{{ route('siswa.index', ['tingkatan' => 'SMP', 'sort' => request('sort')]) }}" 
-                               class="jenjang-link {{ request('tingkatan') == 'SMP' ? 'active' : '' }}">
-                               SMP
-                            </a>
-                            <a href="{{ route('siswa.index', ['tingkatan' => 'SMA', 'sort' => request('sort')]) }}" 
-                               class="jenjang-link {{ request('tingkatan') == 'SMA' ? 'active' : '' }}">
-                               SMA
-                            </a>
+                            <a href="{{ route('siswa.index', ['sort' => request('sort')]) }}" class="jenjang-link {{ !request('tingkatan') ? 'active' : '' }}">Semua</a>
+                            <a href="{{ route('siswa.index', ['tingkatan' => 'TK', 'sort' => request('sort')]) }}" class="jenjang-link {{ request('tingkatan') == 'TK' ? 'active' : '' }}">TK</a>
+                            <a href="{{ route('siswa.index', ['tingkatan' => 'SD', 'sort' => request('sort')]) }}" class="jenjang-link {{ request('tingkatan') == 'SD' ? 'active' : '' }}">SD</a>
+                            <a href="{{ route('siswa.index', ['tingkatan' => 'SMP', 'sort' => request('sort')]) }}" class="jenjang-link {{ request('tingkatan') == 'SMP' ? 'active' : '' }}">SMP</a>
+                            <a href="{{ route('siswa.index', ['tingkatan' => 'SMA', 'sort' => request('sort')]) }}" class="jenjang-link {{ request('tingkatan') == 'SMA' ? 'active' : '' }}">SMA</a>
                         </div>
                     </div>
 
                     <div class="d-flex flex-wrap align-items-center justify-content-between p-3 bg-light rounded-3 border">
-                        
                         <div class="d-flex gap-3 flex-grow-1" style="max-width: 700px;">
                             <select name="sort" class="form-select border border-secondary-subtle" style="width: auto; cursor: pointer;" onchange="this.form.submit()">
                                 <option value="terbaru" {{ request('sort') == 'terbaru' ? 'selected' : '' }}>Urutan: Terbaru</option>
@@ -169,15 +149,11 @@
                                 <option value="kelas_az" {{ request('sort') == 'kelas_az' ? 'selected' : '' }}>Kelas (A-Z)</option>
                                 <option value="jenjang_asc" {{ request('sort') == 'jenjang_asc' ? 'selected' : '' }}>Jenjang (TK - SMA)</option>
                             </select>
-
                             <div class="input-group flex-grow-1">
                                 <span class="input-group-text bg-white border border-end-0 border-secondary-subtle"><i class="fas fa-search text-muted"></i></span>
                                 <input type="text" name="cari" class="form-control border border-start-0 border-secondary-subtle" placeholder="Cari nama atau sekolah..." value="{{ request('cari') }}">
                             </div>
                         </div>
-
-                        <div class="mx-3 border-start border-secondary opacity-25 d-none d-md-block" style="height: 35px;"></div>
-
                         <div class="d-flex gap-2 mt-2 mt-md-0">
                             <a href="{{ route('siswa.rekap') }}" class="btn btn-warning btn-sm text-dark fw-bold border border-warning shadow-sm px-3 d-flex align-items-center">
                                 <i class="fas fa-chart-pie me-2"></i> Rekap
@@ -186,7 +162,6 @@
                                 <i class="fas fa-file-excel me-2"></i> Excel
                             </a>
                         </div>
-
                     </div>
                 </form>
             </div>
@@ -212,7 +187,6 @@
                                     <a href="{{ route('siswa.show', $s->id) }}" class="nama-siswa-link fw-bold" title="Klik untuk lihat detail">
                                         {{ $s->nama }}
                                     </a>
-                                    <div class="small text-muted d-md-none">{{ $s->no_hp ?? '-' }}</div>
                                 </td>
                                 <td class="text-center">
                                     @if($s->tingkatan == 'TK') <span class="badge bg-success bg-opacity-10 text-success border border-success px-2 rounded-pill">TK</span>
@@ -223,22 +197,28 @@
                                 </td>
                                 <td class="text-start text-secondary">{{ $s->asal_sekolah ?? '-' }}</td>
                                 <td class="text-center fw-semibold text-dark">{{ $s->kelas }}</td>
+                                
                                 <td class="text-center">
-                                    <div class="btn-group btn-group-sm shadow-sm rounded" role="group">
-                                        <a href="{{ route('siswa.show', $s->id) }}" class="btn btn-light border text-info" title="Lihat Detail">
+                                    <div class="d-flex justify-content-center">
+                                        
+                                        <a href="{{ route('siswa.show', $s->id) }}" class="btn btn-icon btn-detail" title="Lihat Detail">
                                             <i class="fas fa-eye"></i>
                                         </a>
-                                        <a href="{{ route('siswa.edit', $s->id) }}" class="btn btn-light border text-warning" title="Edit Data">
+                                        
+                                        <a href="{{ route('siswa.edit', $s->id) }}" class="btn btn-icon btn-edit" title="Edit Data">
                                             <i class="fas fa-edit"></i>
                                         </a>
+                                        
                                         <form action="{{ route('siswa.destroy', $s->id) }}" method="POST" class="d-inline" onsubmit="return confirm('Hapus siswa {{ $s->nama }}?')">
                                             @csrf @method('DELETE')
-                                            <button class="btn btn-light border text-danger" title="Hapus Data" style="border-radius: 0 4px 4px 0;">
+                                            <button type="submit" class="btn btn-icon btn-delete" title="Hapus Data">
                                                 <i class="fas fa-trash-alt"></i>
                                             </button>
                                         </form>
+
                                     </div>
                                 </td>
+                                
                             </tr>
                             @empty
                             <tr>

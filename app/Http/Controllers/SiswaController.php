@@ -10,84 +10,94 @@ use Illuminate\Support\Facades\DB;
 
 class SiswaController extends Controller
 {
-    // tampilan
-public function index(Request $request)
-{
-    $query = Siswa::query();
+    /**
+     * 1. HALAMAN UTAMA (DAFTAR SISWA)
+     */
+    public function index(Request $request)
+    {
+        $query = Siswa::query();
 
-    // Filter Tingkatan (sudah ada)
-    if ($request->has('tingkatan') && $request->tingkatan != null) {
-        $query->where('tingkatan', $request->tingkatan);
-    }
+        // Filter Tingkatan
+        $query->when($request->filled('tingkatan'), function ($q) use ($request) {
+            return $q->where('tingkatan', $request->tingkatan);
+        });
 
-    // Filter Pencarian (sudah ada)
-    if ($request->has('cari')) {
-        $query->where('nama', 'like', '%' . $request->cari . '%');
-    }
+        // Filter Pencarian (Nama / Sekolah)
+        $query->when($request->filled('cari'), function ($q) use ($request) {
+            return $q->where('nama', 'like', '%' . $request->cari . '%')
+                     ->orWhere('asal_sekolah', 'like', '%' . $request->cari . '%');
+        });
 
-    // --- LOGIKA SORTING BARU ---
-    if ($request->has('sort')) {
-        switch ($request->sort) {
-            case 'nama_az':
-                $query->orderBy('nama', 'asc'); break;
-            case 'nama_za':
-                $query->orderBy('nama', 'desc'); break;
-            case 'kelas_az':
-                $query->orderBy('kelas', 'asc'); break;
-            // Ini logika jenjang custom (manual karena string)
-            case 'jenjang_asc':
-                // Urutan manual: TK, SD, SMP, SMA
-                $query->orderByRaw("FIELD(tingkatan, 'TK', 'SD', 'SMP', 'SMA', 'Alumni')"); break;
-            case 'jenjang_desc':
-                $query->orderByRaw("FIELD(tingkatan, 'Alumni', 'SMA', 'SMP', 'SD', 'TK')"); break;
-            default: // terbaru
-                $query->latest(); break;
+        // Logika Sorting
+        if ($request->has('sort')) {
+            switch ($request->sort) {
+                case 'nama_az':
+                    $query->orderBy('nama', 'asc'); break;
+                case 'nama_za':
+                    $query->orderBy('nama', 'desc'); break;
+                case 'kelas_az':
+                    $query->orderBy('kelas', 'asc'); break;
+                case 'jenjang_asc':
+                    $query->orderByRaw("FIELD(tingkatan, 'TK', 'SD', 'SMP', 'SMA', 'Alumni')"); break;
+                case 'jenjang_desc':
+                    $query->orderByRaw("FIELD(tingkatan, 'Alumni', 'SMA', 'SMP', 'SD', 'TK')"); break;
+                default:
+                    $query->latest(); break;
+            }
+        } else {
+            $query->latest();
         }
-    } else {
-        $query->latest();
+
+        $siswas = $query->paginate(10)->withQueryString(); // Tambahkan Pagination biar ringan
+
+        return view('siswa.index', compact('siswas'));
     }
 
-    $siswas = $query->get();
-    return view('siswa.index', compact('siswas'));
-}
-
-    // 2. HALAMAN TAMBAH
+    /**
+     * 2. CRUD: CREATE
+     */
     public function create()
     {
         return view('siswa.create');
     }
 
-    // 3. PROSES SIMPAN
+    /**
+     * 3. CRUD: STORE
+     */
     public function store(Request $request)
-{
-    $request->validate([
-        'nama' => 'required|string|max:255',
-        'tingkatan' => 'required',
-        'kelas' => 'required',
-        'asal_sekolah' => 'nullable|string',
-        'no_hp' => 'nullable|numeric|digits_between:10,15', // Validasi angka 10-15 digit
-    ]);
+    {
+        $request->validate([
+            'nama'         => 'required|string|max:255',
+            'tingkatan'    => 'required',
+            'kelas'        => 'required',
+            'asal_sekolah' => 'nullable|string',
+            'no_hp'        => 'nullable|numeric|digits_between:10,15',
+        ]);
 
-    Siswa::create($request->all());
+        Siswa::create($request->all());
 
-    return redirect()->route('siswa.index')->with('success', 'Data siswa berhasil ditambahkan.');
-}
+        return redirect()->route('siswa.index')->with('success', 'Data siswa berhasil ditambahkan.');
+    }
 
-    // 4. HALAMAN EDIT
+    /**
+     * 4. CRUD: EDIT
+     */
     public function edit($id)
     {
         $siswa = Siswa::findOrFail($id);
         return view('siswa.edit', compact('siswa'));
     }
 
-    // 5. PROSES UPDATE
+    /**
+     * 5. CRUD: UPDATE
+     */
     public function update(Request $request, $id)
     {
         $request->validate([
-            'nama' => 'required|string|max:255',
-            'tingkatan' => 'required|string',
+            'nama'         => 'required|string|max:255',
+            'tingkatan'    => 'required|string',
             'asal_sekolah' => 'nullable|string|max:255',
-            'kelas' => 'required|string|max:50',
+            'kelas'        => 'required|string|max:50',
         ]);
 
         $siswa = Siswa::findOrFail($id);
@@ -96,7 +106,9 @@ public function index(Request $request)
         return redirect()->route('siswa.index')->with('success', 'Data siswa berhasil diperbarui!');
     }
 
-    // 6. HAPUS DATA
+    /**
+     * 6. CRUD: DESTROY
+     */
     public function destroy($id)
     {
         $siswa = Siswa::findOrFail($id);
@@ -105,64 +117,96 @@ public function index(Request $request)
         return redirect()->route('siswa.index')->with('success', 'Siswa berhasil dihapus!');
     }
 
-    // 7. HALAMAN REKAP (JUMLAH SISWA)
+    /**
+     * 7. CRUD: SHOW (Detail Satu Siswa)
+     */
+    public function show(string $id)
+    {
+        $siswa = Siswa::findOrFail($id);
+        return view('siswa.show', compact('siswa'));
+    }
+
+    // ==========================================================
+    // BAGIAN REKAPITULASI (HIERARKI)
+    // ==========================================================
+
+    /**
+     * LEVEL 1: REKAP UTAMA (Statistik & Daftar Sekolah)
+     */
     public function rekap(Request $request)
     {
-        $total_tk = Siswa::where('tingkatan', 'TK')->count();
-        $total_sd = Siswa::where('tingkatan', 'SD')->count();
-        $total_smp = Siswa::where('tingkatan', 'SMP')->count();
-        $total_sma = Siswa::where('tingkatan', 'SMA')->count();
-        $total_semua = Siswa::count();
+        // Optimasi: Hitung semua statistik dalam 1 query saja
+        $stats = Siswa::selectRaw("
+            count(*) as total,
+            count(case when tingkatan = 'TK' then 1 end) as tk,
+            count(case when tingkatan = 'SD' then 1 end) as sd,
+            count(case when tingkatan = 'SMP' then 1 end) as smp,
+            count(case when tingkatan = 'SMA' then 1 end) as sma
+        ")->first();
 
-        $query = Siswa::select('asal_sekolah', 'kelas', 'tingkatan', DB::raw('count(*) as total'))
-                      ->groupBy('asal_sekolah', 'kelas', 'tingkatan');
+        // Assign variable untuk view
+        $total_tk = $stats->tk;
+        $total_sd = $stats->sd;
+        $total_smp = $stats->smp;
+        $total_sma = $stats->sma;
+        $total_semua = $stats->total;
 
-        // LOGIKA SEARCH BAR
-        if ($request->has('cari') && $request->cari != '') {
-            $keyword = $request->cari;
-            $query->where(function($q) use ($keyword) {
-                $q->where('asal_sekolah', 'like', '%' . $keyword . '%')
-                  ->orWhere('kelas', 'like', '%' . $keyword . '%');
-            });
+        // Query Grouping berdasarkan Sekolah
+        $query = Siswa::select('asal_sekolah', DB::raw('count(*) as total'))
+                      ->groupBy('asal_sekolah');
+
+        if ($request->filled('cari')) {
+            $query->where('asal_sekolah', 'like', '%' . $request->cari . '%');
         }
 
-        $query->orderByRaw("FIELD(tingkatan, 'TK', 'SD', 'SMP', 'SMA')");
-        
-        $query->orderBy('asal_sekolah', 'asc'); 
-        $query->orderBy('kelas', 'asc');
+        $data_rekap = $query->orderBy('total', 'desc')->get();
 
-        $data_rekap = $query->get();
-
-        return view('siswa.recap', compact('total_tk', 'total_sd', 'total_smp', 'total_sma', 'total_semua', 'data_rekap'));
-    }
-    // 8. DETAIL REKAP
-    public function rekapDetail(Request $request)
-{
-    $sekolah = $request->query('sekolah'); 
-    $kelas = $request->query('kelas');
-
-    $query = Siswa::where('kelas', $kelas)->latest();
-
-    if ($sekolah == 'Tidak Diketahui' || $sekolah == '') {
-        $query->whereNull('asal_sekolah')->orWhere('asal_sekolah', '');
-    } else {
-        $query->where('asal_sekolah', $sekolah);
+        return view('siswa.recap', compact(
+            'total_tk', 'total_sd', 'total_smp', 'total_sma', 'total_semua', 'data_rekap'
+        ));
     }
 
-    $siswas = $query->get();
+    /**
+     * LEVEL 2: DETAIL SEKOLAH (Daftar Kelas)
+     */
+    public function rekapSchool($sekolah)
+    {
+        $nama_sekolah = urldecode($sekolah);
 
-    return view('siswa.recap_detail', compact('siswas', 'sekolah', 'kelas'));
-}
+        // Cari daftar kelas di sekolah tersebut
+        $data_kelas = Siswa::where('asal_sekolah', $nama_sekolah)
+                           ->select('kelas', 'tingkatan', DB::raw('count(*) as total'))
+                           ->groupBy('kelas', 'tingkatan')
+                           ->orderBy('kelas', 'asc')
+                           ->get();
 
-    // 9. SHOW (Opsional, untuk tombol mata biru)
-    public function show(string $id)
-{
-    $siswa = Siswa::findOrFail($id);
+        return view('siswa.rekap_school', compact('data_kelas', 'nama_sekolah'));
+    }
 
-    return view('siswa.show', compact('siswa'));
-}
+    /**
+     * LEVEL 3: DETAIL KELAS (Daftar Siswa)
+     */
+    public function rekapDetail($sekolah, $kelas)
+    {
+        $nama_sekolah = urldecode($sekolah);
+        $nama_kelas = urldecode($kelas);
 
-    // 10. EXPORT EXCEL (INI YANG TADI ERROR / HILANG)
+        // Tampilkan siswa spesifik di sekolah & kelas itu
+        $siswas = Siswa::where('asal_sekolah', $nama_sekolah)
+                       ->where('kelas', $nama_kelas)
+                       ->orderBy('nama', 'asc')
+                       ->get();
+
+        return view('siswa.recap_detail', [
+            'siswas' => $siswas,
+            'sekolah' => $nama_sekolah,
+            'kelas' => $nama_kelas
+        ]);
+    }
+
+    /**
+     * 8. EXPORT EXCEL
+     */
     public function export()
     {
         return Excel::download(new SiswaExport, 'Data_Seluruh_Siswa.xlsx');

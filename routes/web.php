@@ -30,6 +30,9 @@ Route::middleware('auth')->group(function () {
     // MANAJEMEN ADMIN (USER)
     Route::resource('user', UserController::class);
 
+    // Route untuk menghapus log
+    Route::delete('/riwayat/{id}', [RiwayatAktivitasController::class, 'destroy'])->name('riwayat.destroy');
+
     // PEMBAYARAN
     Route::get('/pembayaran/{id}/cetak', [PembayaranController::class, 'cetak'])->name('pembayaran.cetak');
     
@@ -41,8 +44,14 @@ Route::middleware('auth')->group(function () {
     Route::get('/siswa/export', [SiswaController::class, 'export'])->name('siswa.export');
     
     // Rute Rekap Siswa
-    Route::get('/rekap-siswa', [SiswaController::class, 'rekap'])->name('siswa.rekap');
-    Route::get('/rekap-siswa/detail', [SiswaController::class, 'rekapDetail'])->name('siswa.rekapDetail');
+    // Route Rekap Utama (Level 1)
+    Route::get('/siswa/rekap', [SiswaController::class, 'rekap'])->name('siswa.rekap');
+
+    // Route Baru: Detail per Sekolah (Level 2)
+    Route::get('/siswa/rekap/{sekolah}', [SiswaController::class, 'rekapSchool'])->name('siswa.rekapSchool');
+
+    // Route Detail Siswa per Kelas (Level 3 - Sudah ada, sesuaikan sedikit)
+    Route::get('/siswa/rekap/{sekolah}/{kelas}', [SiswaController::class, 'rekapDetail'])->name('siswa.rekapDetail');
     
     // Resource Siswa (Cukup satu baris ini saja)
     Route::resource('siswa', SiswaController::class);

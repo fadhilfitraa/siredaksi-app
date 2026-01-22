@@ -130,14 +130,14 @@
             <div class="card-header bg-white fw-bold py-3 border-bottom-0">
                 <div class="row align-items-center justify-content-between">
                     <div class="col-md-6">
-                        <h5 class="mb-0 fw-bold text-primary"><i class="fas fa-school me-2"></i> Rincian Per Sekolah & Kelas</h5>
+                        <h5 class="mb-0 fw-bold text-primary"><i class="fas fa-school me-2"></i> Data Sekolah Mitra</h5>
                     </div>
                     
                     <div class="col-md-5">
                         <form action="{{ route('siswa.rekap') }}" method="GET">
                             <div class="input-group">
                                 <span class="input-group-text bg-white text-muted border-end-0"><i class="fas fa-search"></i></span>
-                                <input type="text" name="cari" class="form-control border-start-0 ps-0" placeholder="Cari Sekolah atau Kelas..." value="{{ request('cari') }}">
+                                <input type="text" name="cari" class="form-control border-start-0 ps-0" placeholder="Cari Nama Sekolah..." value="{{ request('cari') }}">
                                 <button class="btn btn-primary px-4" type="submit">Cari</button>
                                 @if(request('cari'))
                                     <a href="{{ route('siswa.rekap') }}" class="btn btn-light border" title="Reset">
@@ -155,45 +155,38 @@
                     <table class="table table-hover table-striped mb-0 align-middle">
                         <thead class="table-light">
                             <tr>
-                                <th class="ps-4 py-3">Asal Sekolah</th>
-                                <th class="py-3">Kelas</th>
-                                <th class="py-3">Jenjang</th>
-                                <th class="py-3 text-center">Jumlah Siswa</th>
+                                <th class="ps-4 py-3" width="5%">No</th>
+                                <th class="py-3">Nama Sekolah</th>
+                                <th class="py-3 text-center">Total Siswa</th>
                                 <th class="py-3 text-center pe-4">Aksi</th>
                             </tr>
                         </thead>
                         <tbody>
-                            @forelse($data_rekap as $d)
+                            @forelse($data_rekap as $index => $d)
                             <tr>
-                                <td class="ps-4 fw-bold text-dark">
+                                <td class="ps-4 fw-bold text-muted">{{ $index + 1 }}</td>
+                                <td class="fw-bold text-dark fs-6">
                                     {{ $d->asal_sekolah ? $d->asal_sekolah : 'Tidak Diketahui' }}
                                 </td>
-                                <td class="fw-bold text-secondary">{{ $d->kelas }}</td>
-                                <td>
-                                    @if($d->tingkatan == 'TK') <span class="badge bg-success shadow-sm">TK</span>
-                                    @elseif($d->tingkatan == 'SD') <span class="badge bg-danger shadow-sm">SD</span>
-                                    @elseif($d->tingkatan == 'SMP') <span class="badge bg-primary shadow-sm">SMP</span>
-                                    @else <span class="badge bg-secondary shadow-sm">SMA</span>
-                                    @endif
-                                </td>
+                                
                                 <td class="text-center">
-                                    <span class="badge bg-light text-dark border px-3 py-2 rounded-pill fs-6">{{ $d->total }}</span>
+                                    <span class="badge bg-primary bg-opacity-10 text-primary border border-primary rounded-pill px-3 py-2 fs-6">
+                                        {{ $d->total }} Siswa
+                                    </span>
                                 </td>
+                                
                                 <td class="text-center pe-4">
-                                    <a href="{{ route('siswa.rekapDetail', [
-                                        'sekolah' => $d->asal_sekolah ?? 'Tidak Diketahui', 
-                                        'kelas' => $d->kelas
-                                    ]) }}" class="btn btn-outline-info btn-sm rounded-pill px-3">
-                                        <i class="fas fa-users me-1"></i> Detail
+                                    <a href="{{ route('siswa.rekapSchool', urlencode($d->asal_sekolah ?? 'Tidak Diketahui')) }}" 
+                                       class="btn btn-primary btn-sm rounded-pill px-4 shadow-sm">
+                                        Lihat Kelas <i class="fas fa-arrow-right ms-2"></i>
                                     </a>
                                 </td>
                             </tr>
                             @empty
                             <tr>
-                                <td colspan="5" class="text-center text-muted py-5">
-                                    <div class="mb-3"><i class="fas fa-folder-open fa-3x opacity-25"></i></div>
-                                    <h6 class="fw-bold">Data Tidak Ditemukan</h6>
-                                    <p class="small">Coba kata kunci pencarian lain.</p>
+                                <td colspan="4" class="text-center text-muted py-5">
+                                    <div class="mb-3"><i class="fas fa-school fa-3x opacity-25"></i></div>
+                                    <h6 class="fw-bold">Data Sekolah Tidak Ditemukan</h6>
                                 </td>
                             </tr>
                             @endforelse

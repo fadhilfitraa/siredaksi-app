@@ -129,7 +129,7 @@
                                 </td>
                                 <td class="text-secondary">{{ $u->email }}</td>
                                 <td class="text-muted small">
-                                    <i class="far fa-calendar-alt me-1"></i> {{ $u->created_at->format('d M Y') }}
+                                    <i class="far fa-calendar-alt me-1"></i> {{ $u->created_at->translatedFormat('d M Y') }}
                                 </td>
                                 <td class="text-center">
                                     @if($u->id != Auth::id())
