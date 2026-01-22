@@ -3,7 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\User;
-use Illuminate\Http\Request;
+use Illuminate\Http\Request; // Import ini sudah benar
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rules;
 
@@ -23,7 +23,8 @@ class UserController extends Controller
     }
 
     // Proses Simpan Admin Baru
-    public function store(Request\Request $request)
+    // PERBAIKAN: Hapus '\Request' yang berlebihan
+    public function store(Request $request)
     {
         $request->validate([
             'name' => ['required', 'string', 'max:255'],
@@ -40,10 +41,10 @@ class UserController extends Controller
         return redirect()->route('user.index')->with('success', 'Admin baru berhasil ditambahkan!');
     }
 
-    // Fitur Hapus Admin (Penting jika ada staff resign)
+    // Fitur Hapus Admin
     public function destroy($id)
     {
-        // Cegah hapus diri sendiri (opsional tapi disarankan)
+        // Cegah hapus diri sendiri
         if (auth()->user()->id == $id) {
             return back()->with('error', 'Tidak bisa menghapus akun sendiri!');
         }

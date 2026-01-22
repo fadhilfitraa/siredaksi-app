@@ -135,6 +135,9 @@
                         <a href="{{ route('user.index') }}" class="btn btn-outline-dark w-100 sidebar-btn">
                             <i class="fas fa-user-shield"></i> Kelola Admin
                         </a>
+                        <a href="{{ route('riwayat.index') }}" class="btn btn-outline-secondary w-100 sidebar-btn">
+                            <i class="fas fa-history"></i> Riwayat Aktivitas
+                        </a>
                     </div>
                 </div>
             </div>

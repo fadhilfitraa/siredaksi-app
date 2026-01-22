@@ -4,7 +4,8 @@ use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\PembayaranController;
 use App\Http\Controllers\SiswaController;
-use App\Http\Controllers\UserController; // TAMBAHAN: Import Controller User
+use App\Http\Controllers\UserController;
+use App\Http\Controllers\RiwayatAktivitasController;
 use App\Models\Siswa;
 use App\Models\Pembayaran;
 
@@ -24,6 +25,7 @@ Route::middleware('auth')->group(function () {
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
     Route::resource('user', App\Http\Controllers\UserController::class);
+    Route::get('/riwayat-aktivitas', [RiwayatAktivitasController::class, 'index'])->name('riwayat.index');
 
     // MANAJEMEN ADMIN (USER)
     Route::resource('user', UserController::class);
