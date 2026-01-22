@@ -45,6 +45,8 @@ jobs:
         run: php artisan key:generate
 
       - name: Execute tests
+        env:
+          DB_CONNECTION: sqlite
+          DB_DATABASE: ":memory:"
         run: php artisan test
 
-        
