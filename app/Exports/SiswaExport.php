@@ -12,7 +12,7 @@ use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
 
 class SiswaExport implements FromCollection, WithHeadings, WithMapping, ShouldAutoSize, WithStyles
 {
-    // AMBIL SEMUA DATA SISWA
+
     public function collection()
     {
         return Siswa::orderBy('kelas', 'asc')->orderBy('nama', 'asc')->get();

@@ -24,16 +24,14 @@ class PembayaranController extends Controller
             $query->whereYear('tanggal_bayar', $request->tahun);
         }
 
-        // 3. LOGIKA BARU: Filter Rentang Tanggal
+        // 3. Filter Rentang Tanggal
         if ($request->filled('start_date') && $request->filled('end_date')) {
-            // Jika user isi Tanggal Awal DAN Akhir (Misal: 1 Jan - 5 Jan)
             $query->whereBetween('tanggal_bayar', [$request->start_date, $request->end_date]);
         } elseif ($request->filled('start_date')) {
-            // Jika user CUMA isi Tanggal Awal (Misal: 20 Jan), otomatis cari HANYA tanggal itu
             $query->whereDate('tanggal_bayar', $request->start_date);
         }
 
-        // 4. Logika Sorting (Sama seperti sebelumnya)
+        // 4. Sorting
         if ($request->sort == 'tanggal_terbaru') {
             $query->orderBy('tanggal_bayar', 'desc');
         } elseif ($request->sort == 'tanggal_terlama') {
@@ -43,26 +41,24 @@ class PembayaranController extends Controller
                   ->orderBy('siswas.nama', 'asc')
                   ->select('pembayarans.*'); 
         } else {
-            $query->latest(); // Default input terbaru
+            $query->latest();
         }
 
         $pembayarans = $query->paginate(10);
         
-        // Hitung total pemasukan berdasarkan filter yang aktif
         $total_pemasukan = $query->sum('jumlah_bayar');
 
         return view('pembayaran.index', compact('pembayarans', 'total_pemasukan'));
     }
 
-    // 2. PERBAIKAN DI SINI (Ubah $siswa jadi $siswas)
+    // 2. CREATE
     public function create()
     {
-        // Gunakan $siswas (jamak) agar sesuai dengan View
         $siswas = Siswa::orderBy('nama', 'asc')->get(); 
         return view('pembayaran.create', compact('siswas'));
     }
 
-    // 3. STORE (Tetap sama)
+    // 3. STORE
     public function store(Request $request)
     {
         $request->validate([
@@ -86,17 +82,15 @@ class PembayaranController extends Controller
         return redirect()->route('dashboard')->with('success', 'Pembayaran berhasil disimpan!');
     }
 
-    // 4. PERBAIKAN DI SINI JUGA (Ubah $siswa jadi $siswas)
+    // 4. EDIT
     public function edit($id)
     {
         $pembayaran = Pembayaran::findOrFail($id);
-        // Gunakan $siswas (jamak)
         $siswas = Siswa::orderBy('nama', 'asc')->get();
         return view('pembayaran.edit', compact('pembayaran', 'siswas'));
     }
 
-    // ... (Sisa function update, destroy, cetak, export tetap sama) ...
-    
+    // 5. UPDATE
     public function update(Request $request, $id)
     {
         $request->validate([

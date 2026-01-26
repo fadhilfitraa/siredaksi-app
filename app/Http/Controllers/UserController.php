@@ -3,27 +3,23 @@
 namespace App\Http\Controllers;
 
 use App\Models\User;
-use Illuminate\Http\Request; // Import ini sudah benar
+use Illuminate\Http\Request; 
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rules;
 
 class UserController extends Controller
 {
-    // Tampilkan Daftar Admin
     public function index()
     {
         $users = User::all();
         return view('user.index', compact('users'));
     }
 
-    // Tampilkan Form Tambah Admin
     public function create()
     {
         return view('user.create');
     }
 
-    // Proses Simpan Admin Baru
-    // PERBAIKAN: Hapus '\Request' yang berlebihan
     public function store(Request $request)
     {
         $request->validate([
@@ -41,10 +37,8 @@ class UserController extends Controller
         return redirect()->route('user.index')->with('success', 'Admin baru berhasil ditambahkan!');
     }
 
-    // Fitur Hapus Admin
     public function destroy($id)
     {
-        // Cegah hapus diri sendiri
         if (auth()->user()->id == $id) {
             return back()->with('error', 'Tidak bisa menghapus akun sendiri!');
         }

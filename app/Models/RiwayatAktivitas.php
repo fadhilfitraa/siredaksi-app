@@ -12,7 +12,6 @@ class RiwayatAktivitas extends Model
     protected $table = 'riwayat_aktivitas';
     protected $guarded = [];
 
-    // Relasi ke User (Admin)
     public function user()
     {
         return $this->belongsTo(User::class);

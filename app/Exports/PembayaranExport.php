@@ -19,18 +19,15 @@ class PembayaranExport implements FromQuery, WithHeadings, WithMapping, ShouldAu
     {
         $this->request = $request;
     }
-
-    // 1. QUERY DATA (Sama persis dengan logika di Controller)
+    // 1. QUERY DATA YANG MAU DIEKSPORT
     public function query()
     {
-        $query = Pembayaran::query()->with('siswa'); // Pakai query() bukan select()
+        $query = Pembayaran::query()->with('siswa'); 
 
-        // Filter Bulan
         if ($this->request->has('bulan') && $this->request->bulan != '') {
             $query->whereMonth('tanggal_bayar', $this->request->bulan);
         }
 
-        // Filter Tahun
         if ($this->request->has('tahun') && $this->request->tahun != '') {
             $query->whereYear('tanggal_bayar', $this->request->tahun);
         }
@@ -39,7 +36,7 @@ class PembayaranExport implements FromQuery, WithHeadings, WithMapping, ShouldAu
         $sort = $this->request->sort;
         if ($sort == 'nama_az' || $sort == 'kelas_az') {
             $query->join('siswas', 'pembayarans.siswa_id', '=', 'siswas.id')
-                  ->select('pembayarans.*'); // Ambil kolom pembayaran saja biar ID gak bentrok
+                  ->select('pembayarans.*'); 
             
             if ($sort == 'nama_az') $query->orderBy('siswas.nama', 'asc');
             if ($sort == 'kelas_az') $query->orderBy('siswas.kelas', 'asc');
@@ -52,7 +49,6 @@ class PembayaranExport implements FromQuery, WithHeadings, WithMapping, ShouldAu
         return $query;
     }
 
-    // 2. JUDUL KOLOM DI EXCEL
     public function headings(): array
     {
         return [
@@ -66,7 +62,6 @@ class PembayaranExport implements FromQuery, WithHeadings, WithMapping, ShouldAu
         ];
     }
 
-    // 3. ISI DATA PER BARIS
     public function map($pembayaran): array
     {
         return [
@@ -80,7 +75,6 @@ class PembayaranExport implements FromQuery, WithHeadings, WithMapping, ShouldAu
         ];
     }
 
-    // 4. STYLE (Bikin Header Tebal)
     public function styles(Worksheet $sheet)
     {
         return [

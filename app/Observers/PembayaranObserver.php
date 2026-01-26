@@ -10,7 +10,6 @@ class PembayaranObserver
 {
     public function created(Pembayaran $pembayaran): void
     {
-        // Kita load relasi siswa biar bisa ambil namanya
         $pembayaran->load('siswa');
         $nama_siswa = $pembayaran->siswa->nama ?? 'Siswa Terhapus';
 

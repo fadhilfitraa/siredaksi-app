@@ -14,7 +14,7 @@ class Siswa extends Model
     'tingkatan',
     'kelas',
     'asal_sekolah',
-    'no_hp', // <-- Tambahkan ini
+    'no_hp',
 ];
 
     public function pembayarans()

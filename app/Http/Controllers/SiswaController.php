@@ -12,9 +12,7 @@ use Illuminate\Support\Facades\DB;
 
 class SiswaController extends Controller
 {
-    /**
-     * 1. HALAMAN UTAMA (DAFTAR SISWA)
-     */
+// 1. CRUD: READ
     public function index(Request $request)
     {
         $query = Siswa::query();
@@ -50,22 +48,18 @@ class SiswaController extends Controller
             $query->latest();
         }
 
-        $siswas = $query->paginate(10)->withQueryString(); // Tambahkan Pagination biar ringan
+        $siswas = $query->paginate(10)->withQueryString();
 
         return view('siswa.index', compact('siswas'));
     }
 
-    /**
-     * 2. CRUD: CREATE
-     */
+    // 2. CRUD: CREATE
     public function create()
     {
         return view('siswa.create');
     }
 
-    /**
-     * 3. CRUD: STORE
-     */
+    // 3. CRUD: STORE
     public function store(Request $request)
     {
         $request->validate([
@@ -81,18 +75,14 @@ class SiswaController extends Controller
         return redirect()->route('siswa.index')->with('success', 'Data siswa berhasil ditambahkan.');
     }
 
-    /**
-     * 4. CRUD: EDIT
-     */
+    // 4. CRUD: EDIT
     public function edit($id)
     {
         $siswa = Siswa::findOrFail($id);
         return view('siswa.edit', compact('siswa'));
     }
 
-    /**
-     * 5. CRUD: UPDATE
-     */
+    // 5. CRUD: UPDATE
     public function update(Request $request, $id)
     {
         $request->validate([
@@ -108,9 +98,7 @@ class SiswaController extends Controller
         return redirect()->route('siswa.index')->with('success', 'Data siswa berhasil diperbarui!');
     }
 
-    /**
-     * 6. CRUD: DESTROY
-     */
+    // 6. CRUD: DELETE
     public function destroy($id)
     {
         $siswa = Siswa::findOrFail($id);
@@ -119,9 +107,7 @@ class SiswaController extends Controller
         return redirect()->route('siswa.index')->with('success', 'Siswa berhasil dihapus!');
     }
 
-    /**
-     * 7. CRUD: SHOW (Detail Satu Siswa)
-     */
+    // 7. CRUD: SHOW
     public function show(string $id)
     {
         $siswa = Siswa::findOrFail($id);
@@ -132,12 +118,9 @@ class SiswaController extends Controller
     // BAGIAN REKAPITULASI (HIERARKI)
     // ==========================================================
 
-    /**
-     * LEVEL 1: REKAP UTAMA (Statistik & Daftar Sekolah)
-     */
+   // 1. LEVEL 1: REKAPITULASI SELURUH SEKOLAH
     public function rekap(Request $request)
     {
-        // Optimasi: Hitung semua statistik dalam 1 query saja
         $stats = Siswa::selectRaw("
             count(*) as total,
             count(case when tingkatan = 'TK' then 1 end) as tk,
@@ -146,14 +129,12 @@ class SiswaController extends Controller
             count(case when tingkatan = 'SMA' then 1 end) as sma
         ")->first();
 
-        // Assign variable untuk view
         $total_tk = $stats->tk;
         $total_sd = $stats->sd;
         $total_smp = $stats->smp;
         $total_sma = $stats->sma;
         $total_semua = $stats->total;
 
-        // Query Grouping berdasarkan Sekolah
         $query = Siswa::select('asal_sekolah', DB::raw('count(*) as total'))
                       ->groupBy('asal_sekolah');
 
@@ -168,14 +149,11 @@ class SiswaController extends Controller
         ));
     }
 
-    /**
-     * LEVEL 2: DETAIL SEKOLAH (Daftar Kelas)
-     */
+   // 2. LEVEL 2: REKAPITULASI PER SEKOLAH
     public function rekapSchool($sekolah)
     {
         $nama_sekolah = urldecode($sekolah);
 
-        // Cari daftar kelas di sekolah tersebut
         $data_kelas = Siswa::where('asal_sekolah', $nama_sekolah)
                            ->select('kelas', 'tingkatan', DB::raw('count(*) as total'))
                            ->groupBy('kelas', 'tingkatan')
@@ -185,15 +163,12 @@ class SiswaController extends Controller
         return view('siswa.rekap_school', compact('data_kelas', 'nama_sekolah'));
     }
 
-    /**
-     * LEVEL 3: DETAIL KELAS (Daftar Siswa)
-     */
+    // 3. LEVEL 3: REKAPITULASI PER KELAS DI SEKOLAH TERPILIH
     public function rekapDetail($sekolah, $kelas)
     {
         $nama_sekolah = urldecode($sekolah);
         $nama_kelas = urldecode($kelas);
 
-        // Tampilkan siswa spesifik di sekolah & kelas itu
         $siswas = Siswa::where('asal_sekolah', $nama_sekolah)
                        ->where('kelas', $nama_kelas)
                        ->orderBy('nama', 'asc')
@@ -206,23 +181,21 @@ class SiswaController extends Controller
         ]);
     }
 
-    /**
-     * 8. EXPORT EXCEL
-     */
+    // ==========================================================
+    // BAGIAN IMPORT & EXPORT EXCEL
+    // 8. EXPORT EXCEL
     public function export()
     {
         return Excel::download(new SiswaExport, 'Data_Seluruh_Siswa.xlsx');
     }
 
-    // 11. IMPORT EXCEL
+    // 9. IMPORT EXCEL
     public function import(Request $request)
     {
-        // Validasi file harus excel/csv
         $request->validate([
             'file' => 'required|mimes:xlsx,xls,csv'
         ]);
 
-        // Proses Import
         try {
             Excel::import(new SiswaImport, $request->file('file'));
             return redirect()->route('siswa.index')->with('success', 'Data siswa berhasil diimport!');
