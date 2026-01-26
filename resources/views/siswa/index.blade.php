@@ -39,33 +39,19 @@
         .nama-siswa-link { color: #212529; text-decoration: none; transition: color 0.2s; }
         .nama-siswa-link:hover { color: #0d6efd; text-decoration: underline; }
 
-        /* --- STYLE BARU UNTUK TOMBOL AKSI --- */
+        /* Tombol Aksi Bulat */
         .btn-icon {
-            width: 32px;
-            height: 32px;
-            padding: 0;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            border-radius: 50%; /* Bulat Sempurna */
-            transition: all 0.2s;
-            margin: 0 3px; /* Jarak antar tombol */
-            border: 1px solid #dee2e6;
-            background-color: white;
+            width: 32px; height: 32px; padding: 0;
+            display: inline-flex; align-items: center; justify-content: center;
+            border-radius: 50%; transition: all 0.2s; margin: 0 3px;
+            border: 1px solid #dee2e6; background-color: white;
             box-shadow: 0 2px 4px rgba(0,0,0,0.05);
         }
         .btn-icon:hover { transform: scale(1.1); box-shadow: 0 4px 8px rgba(0,0,0,0.1); }
         
-        /* Warna Spesifik */
-        .btn-detail { color: #0dcaf0; } /* Biru Muda */
-        .btn-detail:hover { background-color: #0dcaf0; color: white; border-color: #0dcaf0; }
-        
-        .btn-edit { color: #ffc107; } /* Kuning */
-        .btn-edit:hover { background-color: #ffc107; color: black; border-color: #ffc107; }
-        
-        .btn-delete { color: #dc3545; } /* Merah */
-        .btn-delete:hover { background-color: #dc3545; color: white; border-color: #dc3545; }
-
+        .btn-detail { color: #0dcaf0; } .btn-detail:hover { background-color: #0dcaf0; color: white; border-color: #0dcaf0; }
+        .btn-edit { color: #ffc107; } .btn-edit:hover { background-color: #ffc107; color: black; border-color: #ffc107; }
+        .btn-delete { color: #dc3545; } .btn-delete:hover { background-color: #dc3545; color: white; border-color: #dc3545; }
     </style>
 </head>
 <body>
@@ -106,7 +92,7 @@
         <div class="d-flex justify-content-between align-items-center mb-4">
             <div>
                 <h4 class="fw-bold text-dark mb-1">Manajemen Data Siswa</h4>
-                <p class="text-muted small mb-0">Total {{ $siswas->count() }} siswa terdaftar di Bimbel Al Kautsar.</p>
+                <p class="text-muted small mb-0">Total {{ $siswas->total() }} siswa terdaftar di Bimbel Al Kautsar.</p>
             </div>
             <div class="d-flex gap-2">
                 <a href="{{ route('dashboard') }}" class="btn btn-secondary shadow-sm fw-bold px-4 py-2 rounded-3">
@@ -154,10 +140,14 @@
                                 <input type="text" name="cari" class="form-control border border-start-0 border-secondary-subtle" placeholder="Cari nama atau sekolah..." value="{{ request('cari') }}">
                             </div>
                         </div>
+
                         <div class="d-flex gap-2 mt-2 mt-md-0">
                             <a href="{{ route('siswa.rekap') }}" class="btn btn-warning btn-sm text-dark fw-bold border border-warning shadow-sm px-3 d-flex align-items-center">
                                 <i class="fas fa-chart-pie me-2"></i> Rekap
                             </a>
+                            <button type="button" class="btn btn-primary btn-sm text-white fw-bold border border-primary shadow-sm px-3 d-flex align-items-center" data-bs-toggle="modal" data-bs-target="#modalImport">
+                                <i class="fas fa-file-upload me-2"></i> Import
+                            </button>
                             <a href="{{ route('siswa.export') }}" class="btn btn-success btn-sm text-white fw-bold border border-success shadow-sm px-3 d-flex align-items-center">
                                 <i class="fas fa-file-excel me-2"></i> Excel
                             </a>
@@ -182,7 +172,7 @@
                         <tbody>
                             @forelse($siswas as $index => $s)
                             <tr>
-                                <td class="text-center text-muted fw-bold">{{ $index + 1 }}</td>
+                                <td class="text-center text-muted fw-bold">{{ $siswas->firstItem() + $index }}</td>
                                 <td class="text-start">
                                     <a href="{{ route('siswa.show', $s->id) }}" class="nama-siswa-link fw-bold" title="Klik untuk lihat detail">
                                         {{ $s->nama }}
@@ -200,25 +190,20 @@
                                 
                                 <td class="text-center">
                                     <div class="d-flex justify-content-center">
-                                        
                                         <a href="{{ route('siswa.show', $s->id) }}" class="btn btn-icon btn-detail" title="Lihat Detail">
                                             <i class="fas fa-eye"></i>
                                         </a>
-                                        
                                         <a href="{{ route('siswa.edit', $s->id) }}" class="btn btn-icon btn-edit" title="Edit Data">
                                             <i class="fas fa-edit"></i>
                                         </a>
-                                        
                                         <form action="{{ route('siswa.destroy', $s->id) }}" method="POST" class="d-inline" onsubmit="return confirm('Hapus siswa {{ $s->nama }}?')">
                                             @csrf @method('DELETE')
                                             <button type="submit" class="btn btn-icon btn-delete" title="Hapus Data">
                                                 <i class="fas fa-trash-alt"></i>
                                             </button>
                                         </form>
-
                                     </div>
                                 </td>
-                                
                             </tr>
                             @empty
                             <tr>
@@ -235,10 +220,50 @@
                 </div>
             </div>
             
-            <div class="card-footer bg-white py-3 border-top">
-                <small class="text-muted">Menampilkan {{ $siswas->count() }} data siswa</small>
+            <div class="card-footer bg-white py-3 border-top d-flex justify-content-end">
+                <div class="mb-0">
+                    {{ $siswas->links('pagination::bootstrap-5') }}
+                </div>
             </div>
 
+        </div>
+    </div>
+
+    <div class="modal fade" id="modalImport" tabindex="-1" aria-labelledby="modalImportLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content rounded-4 border-0 shadow-lg">
+                <div class="modal-header border-bottom-0 pb-0">
+                    <h5 class="modal-title fw-bold text-primary" id="modalImportLabel">
+                        <i class="fas fa-file-import me-2"></i> Import Data Siswa
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                
+                <form action="{{ route('siswa.import') }}" method="POST" enctype="multipart/form-data">
+                    @csrf
+                    <div class="modal-body py-4">
+                        <div class="alert alert-info border-0 d-flex align-items-center small mb-4">
+                            <i class="fas fa-info-circle fa-2x me-3"></i>
+                            <div>
+                                Pastikan file Excel Anda memiliki header kolom: <br>
+                                <strong>nama, tingkatan, kelas, asal_sekolah, no_hp</strong>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="fileImport" class="form-label fw-bold small text-uppercase text-muted">Pilih File Excel (.xlsx / .csv)</label>
+                            <input class="form-control form-control-lg" type="file" id="fileImport" name="file" required accept=".xlsx, .xls, .csv">
+                        </div>
+                    </div>
+                    
+                    <div class="modal-footer border-top-0 pt-0">
+                        <button type="button" class="btn btn-light rounded-pill px-4" data-bs-dismiss="modal">Batal</button>
+                        <button type="submit" class="btn btn-primary rounded-pill px-4 fw-bold shadow-sm">
+                            <i class="fas fa-upload me-2"></i> Upload & Import
+                        </button>
+                    </div>
+                </form>
+            </div>
         </div>
     </div>
 

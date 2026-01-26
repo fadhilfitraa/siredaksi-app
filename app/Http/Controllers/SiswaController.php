@@ -3,6 +3,8 @@
 namespace App\Http\Controllers;
 
 use App\Models\Siswa;
+use App\Imports\SiswaImport;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Http\Request;
 use App\Exports\SiswaExport;
 use Maatwebsite\Excel\Facades\Excel;
@@ -210,5 +212,22 @@ class SiswaController extends Controller
     public function export()
     {
         return Excel::download(new SiswaExport, 'Data_Seluruh_Siswa.xlsx');
+    }
+
+    // 11. IMPORT EXCEL
+    public function import(Request $request)
+    {
+        // Validasi file harus excel/csv
+        $request->validate([
+            'file' => 'required|mimes:xlsx,xls,csv'
+        ]);
+
+        // Proses Import
+        try {
+            Excel::import(new SiswaImport, $request->file('file'));
+            return redirect()->route('siswa.index')->with('success', 'Data siswa berhasil diimport!');
+        } catch (\Exception $e) {
+            return redirect()->back()->with('error', 'Gagal import data. Pastikan format Excel sesuai template.');
+        }
     }
 }

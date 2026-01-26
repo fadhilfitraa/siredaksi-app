@@ -55,6 +55,9 @@ Route::middleware('auth')->group(function () {
     
     // Resource Siswa (Cukup satu baris ini saja)
     Route::resource('siswa', SiswaController::class);
+
+    // Route Import Excel
+    Route::post('/siswa/import', [SiswaController::class, 'import'])->name('siswa.import');
 });
 
 require __DIR__.'/auth.php';

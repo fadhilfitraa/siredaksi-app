@@ -7,6 +7,7 @@ use App\Models\Pembayaran; // Tambahkan ini di atas
 use App\Observers\SiswaObserver; // Tambahkan ini di atas
 use App\Observers\PembayaranObserver; // Tambahkan ini di atas
 use Illuminate\Support\ServiceProvider;
+use Illuminate\Pagination\Paginator;
 
 
 class AppServiceProvider extends ServiceProvider
@@ -27,5 +28,6 @@ class AppServiceProvider extends ServiceProvider
     // Aktifkan Observer
     Siswa::observe(SiswaObserver::class);
     Pembayaran::observe(PembayaranObserver::class);
+    Paginator::useBootstrapFive();
 }
 }
