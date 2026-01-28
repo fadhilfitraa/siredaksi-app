@@ -181,8 +181,6 @@ class SiswaController extends Controller
         ]);
     }
 
-    // ==========================================================
-    // BAGIAN IMPORT & EXPORT EXCEL
     // 8. EXPORT EXCEL
     public function export()
     {
@@ -203,4 +201,11 @@ class SiswaController extends Controller
             return redirect()->back()->with('error', 'Gagal import data. Pastikan format Excel sesuai template.');
         }
     }
+
+    // 10. DELETE ALL RECORDS
+    public function deleteAll()
+{
+    \App\Models\Siswa::query()->delete(); 
+    return redirect()->route('siswa.index')->with('success', 'SEMUA data siswa berhasil dihapus bersih!');
+}
 }

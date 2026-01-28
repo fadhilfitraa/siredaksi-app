@@ -145,12 +145,18 @@
                             <a href="{{ route('siswa.rekap') }}" class="btn btn-warning btn-sm text-dark fw-bold border border-warning shadow-sm px-3 d-flex align-items-center">
                                 <i class="fas fa-chart-pie me-2"></i> Rekap
                             </a>
+
                             <button type="button" class="btn btn-primary btn-sm text-white fw-bold border border-primary shadow-sm px-3 d-flex align-items-center" data-bs-toggle="modal" data-bs-target="#modalImport">
                                 <i class="fas fa-file-upload me-2"></i> Import
                             </button>
+
                             <a href="{{ route('siswa.export') }}" class="btn btn-success btn-sm text-white fw-bold border border-success shadow-sm px-3 d-flex align-items-center">
                                 <i class="fas fa-file-excel me-2"></i> Excel
                             </a>
+
+                            <button type="button" class="btn btn-danger btn-sm text-white fw-bold border border-danger shadow-sm px-3 d-flex align-items-center" data-bs-toggle="modal" data-bs-target="#modalDeleteAll">
+                                <i class="fas fa-trash me-2"></i> Reset
+                            </button>
                         </div>
                     </div>
                 </form>
@@ -263,6 +269,40 @@
                         </button>
                     </div>
                 </form>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="modalDeleteAll" tabindex="-1" aria-labelledby="modalDeleteAllLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content rounded-4 border-0 shadow-lg">
+                <div class="modal-header bg-danger text-white border-bottom-0">
+                    <h5 class="modal-title fw-bold" id="modalDeleteAllLabel">
+                        <i class="fas fa-exclamation-triangle me-2"></i> Konfirmasi Penghapusan
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                
+                <div class="modal-body py-4 text-center">
+                    <i class="fas fa-trash-alt fa-4x text-danger opacity-25 mb-3"></i>
+                    <h4 class="fw-bold text-dark mb-2">Hapus SEMUA Data Siswa?</h4>
+                    <p class="text-muted mb-0">
+                        Tindakan ini <strong>tidak dapat dibatalkan</strong>.<br>
+                        Seluruh data siswa akan hilang dari database secara permanen.
+                    </p>
+                </div>
+                
+                <div class="modal-footer border-top-0 pt-0 justify-content-center pb-4">
+                    <button type="button" class="btn btn-light rounded-pill px-4 border" data-bs-dismiss="modal">Batal</button>
+                    
+                    <form action="{{ route('siswa.deleteAll') }}" method="POST">
+                        @csrf
+                        @method('DELETE')
+                        <button type="submit" class="btn btn-danger rounded-pill px-4 fw-bold shadow-sm">
+                            Ya, Hapus Semuanya
+                        </button>
+                    </form>
+                </div>
             </div>
         </div>
     </div>

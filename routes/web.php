@@ -26,6 +26,7 @@ Route::middleware('auth')->group(function () {
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
     Route::resource('user', App\Http\Controllers\UserController::class);
     Route::get('/riwayat-aktivitas', [RiwayatAktivitasController::class, 'index'])->name('riwayat.index');
+    Route::delete('/siswa/delete-all', [SiswaController::class, 'deleteAll'])->name('siswa.deleteAll');
 
     // MANAJEMEN ADMIN (USER)
     Route::resource('user', UserController::class);
