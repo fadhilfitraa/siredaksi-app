@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Siswa;
 use App\Imports\SiswaImport;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Validator;
 use Illuminate\Http\Request;
 use App\Exports\SiswaExport;
 use Maatwebsite\Excel\Facades\Excel;
@@ -190,15 +191,29 @@ class SiswaController extends Controller
     // 9. IMPORT EXCEL
     public function import(Request $request)
     {
-        $request->validate([
-            'file' => 'required|mimes:xlsx,xls,csv'
+        // 1. Validasi File (Harus Excel & Maksimal 2MB)
+        $validator = Validator::make($request->all(), [
+            'file' => 'required|mimes:xlsx,xls,csv|max:2048',
+        ], [
+            'file.required' => 'File Excel wajib diunggah!',
+            'file.mimes'    => 'Format file salah! Harap upload file .xlsx, .xls, atau .csv',
+            'file.max'      => 'Ukuran file terlalu besar! Maksimal 2MB.',
         ]);
 
+        // Jika validasi gagal, kembalikan dengan pesan error
+        if ($validator->fails()) {
+            return redirect()->back()->with('error', $validator->errors()->first('file'));
+        }
+
+        // 2. Proses Import dengan Try-Catch (Untuk menangkap error isi file)
         try {
             Excel::import(new SiswaImport, $request->file('file'));
             return redirect()->route('siswa.index')->with('success', 'Data siswa berhasil diimport!');
+        } catch (\Maatwebsite\Excel\Validators\ValidationException $e) {
+             $failures = $e->failures();
+             return redirect()->back()->with('error', 'Gagal import! Cek baris ke-' . $failures[0]->row());
         } catch (\Exception $e) {
-            return redirect()->back()->with('error', 'Gagal import data. Pastikan format Excel sesuai template.');
+            return redirect()->back()->with('error', 'Gagal memproses file! Pastikan Header Kolom (nama, tingkatan, kelas, dll) sudah benar.');
         }
     }
 

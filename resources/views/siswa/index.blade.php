@@ -9,15 +9,10 @@
     
     <style>
         body { background-color: #f4f6f9; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
-        
-        /* Navbar Gradient */
         .navbar { background: linear-gradient(135deg, #0d6efd 0%, #0a58ca 100%); }
         .navbar-brand { letter-spacing: 1px; }
-        
-        /* Card Custom */
         .card-custom { border: none; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); overflow: hidden; background: white; }
         
-        /* Filter Jenjang */
         .jenjang-link {
             text-decoration: none; color: #6c757d; border: 1px solid #dee2e6;
             padding: 6px 18px; border-radius: 50px; font-weight: 600; font-size: 0.85rem;
@@ -26,7 +21,6 @@
         .jenjang-link:hover { background-color: #f8f9fa; border-color: #adb5bd; color: #495057; }
         .jenjang-link.active { background-color: #0d6efd; color: white; border-color: #0d6efd; }
 
-        /* Table Styling */
         .table-custom thead th { 
             background-color: #f1f3f5; border-bottom: 2px solid #dee2e6; color: #495057;
             font-weight: 700; text-transform: uppercase; font-size: 0.8rem;
@@ -34,12 +28,9 @@
         }
         .table-custom tbody td { vertical-align: middle; font-size: 0.95rem; padding: 10px 15px; border-color: #e9ecef; }
         .table-hover tbody tr:hover { background-color: #f8f9fa; }
-
-        /* Link Nama Siswa */
         .nama-siswa-link { color: #212529; text-decoration: none; transition: color 0.2s; }
         .nama-siswa-link:hover { color: #0d6efd; text-decoration: underline; }
 
-        /* Tombol Aksi Bulat */
         .btn-icon {
             width: 32px; height: 32px; padding: 0;
             display: inline-flex; align-items: center; justify-content: center;
@@ -48,7 +39,6 @@
             box-shadow: 0 2px 4px rgba(0,0,0,0.05);
         }
         .btn-icon:hover { transform: scale(1.1); box-shadow: 0 4px 8px rgba(0,0,0,0.1); }
-        
         .btn-detail { color: #0dcaf0; } .btn-detail:hover { background-color: #0dcaf0; color: white; border-color: #0dcaf0; }
         .btn-edit { color: #ffc107; } .btn-edit:hover { background-color: #ffc107; color: black; border-color: #ffc107; }
         .btn-delete { color: #dc3545; } .btn-delete:hover { background-color: #dc3545; color: white; border-color: #dc3545; }
@@ -107,6 +97,23 @@
         @if(session('success'))
             <div class="alert alert-success border-0 shadow-sm rounded-3 mb-4 d-flex align-items-center">
                 <i class="fas fa-check-circle me-2 fs-5"></i> {{ session('success') }}
+            </div>
+        @endif
+
+        @if(session('error'))
+            <div class="alert alert-danger border-0 shadow-sm rounded-3 mb-4 d-flex align-items-center">
+                <i class="fas fa-exclamation-triangle me-2 fs-5"></i> 
+                <div><strong>Gagal!</strong> {{ session('error') }}</div>
+            </div>
+        @endif
+
+        @if ($errors->any())
+            <div class="alert alert-danger border-0 shadow-sm rounded-3 mb-4">
+                <ul class="mb-0 ps-3">
+                    @foreach ($errors->all() as $error)
+                        <li>{{ $error }}</li>
+                    @endforeach
+                </ul>
             </div>
         @endif
 
